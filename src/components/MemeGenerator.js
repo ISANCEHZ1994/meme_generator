@@ -1,32 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // useEffect works as componentDidMount, componentDidUpdate, and componentWillUnmount combined
 
 
+const MemeGenerator = () => { // this is a functional component - state and 'this' cannot be used; Hooks are available
 
-const MemeGenerator = () => { // this is a functional component - state and this cannot be used; Hooks are available
-
-  const [inputText, setInputText] = useState({
+  const [inputText, setInputText] = useState({ //useState will always return an array with 2 items: current state and a function to update the state
     topText: "",
-    bottomText: "",
+    bottomText: ""
   }); 
-
+  // console.log(inputText) // this console.log returns {topText: "", bottomText: ""}
   const [randomImage, setRandomImage] = useState(
     "https://i.imgflip.com/26am.jpg"
   );
-
   const [allMemeImgs, setAllMemeImgs] = useState([]);
 
   const handleChange = e => {
     setInputText({
       // Here we are using ES6 spread operator to keep everything from overriding each other
-      ...inputText,
-      [e.target.name]: e.target.value,
+      ...inputText, // we want the state to remain the same so that when you enter either the top text or bottom text, it doesnt show on just one side
+      [e.target.name]: e.target.value
     })
   };
 
   const handleSubmit = e => {
     e.preventDefault()
-    console.log("submitted")
+    const randNum = Math.floor(Math.random() * allMemeImgs.length)
+    const randMemeImgUrl = allMemeImgs[randNum].url
+    setRandomImage(randMemeImgUrl)
   };
+
+  // We cannot use componentDidMount inside a Functional Component so we use useEffect
+  useEffect(() => {
+    console.log("test run")
+    fetch("https://api.imgflip.com/get_memes")
+      .then(response => response.json())
+      .then(response => setAllMemeImgs(response.data.memes))
+  }, [] ) // Without this array here useEffect would keep running infinitely
+  // the Hook now depends on the array of dependencies to re-run
+
 
   return(
     <div className="meme-container">
@@ -34,7 +44,7 @@ const MemeGenerator = () => { // this is a functional component - state and this
      <form onSubmit={handleSubmit}>  
      {/* we make a reference to the handleSubmit method */}
      {/* Here we have two inputs - one for the top text, the other for the bottom */}
-     {/* Again since this is a functional component - cannot use this */}
+     {/* Again since this is a functional component - cannot use 'this' */}
       <input
         type="text"
         name="topText"
@@ -60,6 +70,9 @@ const MemeGenerator = () => { // this is a functional component - state and this
   </div>
   )
 };
+
+export default MemeGenerator;
+// <----------------------------------- Same Component in Class Form
 
 // class MemeGenerator extends Component {
 //   state = {
@@ -122,4 +135,3 @@ const MemeGenerator = () => { // this is a functional component - state and this
 //   }
 // }
 
-export default MemeGenerator;
